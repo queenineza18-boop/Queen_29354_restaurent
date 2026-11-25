@@ -89,7 +89,7 @@ rules as PL/SQL, so a wrong state cannot be stored no matter which client writes
 | What it is | Real point-of-sale receipts from a food-and-beverage micro/small enterprise running **three outlets**, 2 January – 30 September 2025: 53,820 receipts, 96 menu products, 3 payment methods (`BCA` 42,805 · `Cash` 10,913 · `GoFood` 102), net sales, 11 % tax and total per receipt |
 | Licence | CC BY 4.0 — reuse and adaptation with attribution |
 | Personal data | None. There is no customer name, phone or card number; the only customer field is a 0/1 loyalty-card flag, and outlet codes are `SHOP001`–`SHOP003` |
-| Loaded in this repository | `data/raw/pos_transactions_shop001_2025-01-01_07.csv` — 550 receipts, outlet `SHOP001`, 2–7 January 2025, 13,542,000 total (the assignment asks for a few hundred records); `data/raw/products_catalog.csv` — the 96-product catalogue |
+| Loaded in this repository | `data/raw/pos_shop001_2025-01-0{2..7}.csv` — 550 receipts, outlet `SHOP001`, 2–7 January 2025, 13,542,000 total, one CSV per trading day (the assignment asks for a few hundred records); `data/raw/products_catalog.csv` — the 96-product catalogue |
 | Derived, and disclosed | The source has receipts and products but no recipes, no ingredient stock and no staff table. `INGREDIENT`, `MENU_ITEM_INGREDIENT`, `STOCK_MOVEMENT` and `STAFF` will be **derived sample data** built on top of the real receipts and labelled `record_source = 'DERIVED'`. See `data/README.md`. |
 
 The real receipts give the system its hard facts: receipt numbers (`SHOP001JAN2500001`),
@@ -169,7 +169,7 @@ Queen_29354_restaurent/
 ├── data/
 │   ├── README.md                      provenance, licence, subset rule, checksums
 │   └── raw/
-│       ├── pos_transactions_shop001_2025-01-01_07.csv   550 real receipts
+│       ├── pos_shop001_2025-01-02.csv … -01-07.csv       550 real receipts, one CSV per day
 │       └── products_catalog.csv                          96 real products
 ├── docs/
 │   ├── research/research_log.md       six verified sources, type, finding, gap
