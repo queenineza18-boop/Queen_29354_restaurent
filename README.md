@@ -176,7 +176,10 @@ Queen_29354_restaurent/
 │   ├── proposal/proposal.md           the 2-page proposal
 │   ├── proposal/proposal.docx         same text, formatted as submitted
 │   ├── presentation/phase0_slides.md  12 slides
-│   └── innovation/innovation.md       APEX plan
+│   ├── innovation/innovation.md       APEX plan
+│   └── business_process/              Phase I deliverables
+│       ├── business_process_diagram.pdf
+│       └── business_process_explanation.pdf
 └── tools/make_proposal_docx.ps1       rebuilds proposal.docx from proposal.md
 ```
 
@@ -191,9 +194,29 @@ Queen_29354_restaurent/
       PL/SQL features, innovation and APA references
 - [x] Twelve-slide Phase 0 deck
 - [x] Innovation option and tool named (user interface — Oracle APEX)
-- [ ] Phase I business process model (BPMN / UML swimlane) — next phase
+- [ ] Phase I business process model (BPMN / UML swimlane) — see §9
 - [ ] GitHub repository renamed to the `firstname_studentID_projectShortName` pattern if the
       instructor requires it; the current name is `Queen_29354_restaurent`
+
+## 9. Phase I – Business Process Modeling
+
+The process modelled is the restaurant's **order-to-payment** path: the customer orders,
+the cashier captures the order, the system prices and bills it, the customer pays, the
+kitchen's ingredients are deducted, and the day closes with a sales report. Its purpose is
+to replace the handwritten pad and the hand-re-added bill with one record that the order,
+the payment, the stock movement and the report all read from.
+
+| Item | Detail |
+| --- | --- |
+| Modeling tool | _to be filled in: draw.io / Lucidchart / Canva_ |
+| Published diagram link | _to be filled in — share link set to "anyone with the link can view", tested in an incognito window_ |
+| Diagram (PDF) | [business_process_diagram.pdf](docs/business_process/business_process_diagram.pdf) |
+| Explanation (PDF) | [business_process_explanation.pdf](docs/business_process/business_process_explanation.pdf) |
+
+Phase I is closed to generative AI: the diagram is drawn shape by shape in the chosen
+tool and the explanation is written by hand, so this repository carries only the
+published link and the two exported PDFs. Export steps and the exam checklist are in
+`docs/business_process/README.md`.
 
 ## References
 
