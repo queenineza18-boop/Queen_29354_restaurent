@@ -24,8 +24,17 @@ dataset* (Version 2) [Data set]. Mendeley Data. https://doi.org/10.17632/kcgf45y
 
 | File | Bytes | Rows | SHA-256 |
 | --- | --- | --- | --- |
-| `raw/pos_transactions_shop001_2025-01-01_07.csv` | 55,036 | 550 receipts + header | `0704f000dd28d0e575ce151a87fc643a3f2fa223b10e3984985f20dd099b53e8` |
+| `raw/pos_shop001_2025-01-02.csv` | 8,287 | 82 receipts + header | `5467025abe6ecc1ff0bb393fe138d62bd4180d8fd54ea90e452edbd199acbe3e` |
+| `raw/pos_shop001_2025-01-03.csv` | 10,248 | 101 receipts + header | `dc92758d74cdce59bb4cc6779314da0cf47bd0a6ec47cdeb8607d74e123932cb` |
+| `raw/pos_shop001_2025-01-04.csv` | 9,925 | 99 receipts + header | `f71762b7c90be3b1eea6c61213979691a8b0719b2e795a8528f5dc0d489ec360` |
+| `raw/pos_shop001_2025-01-05.csv` | 9,221 | 90 receipts + header | `461cdb6edeca08470709778fc6bf15fd816ee357d1cbafb1fd56e3a0983220ce` |
+| `raw/pos_shop001_2025-01-06.csv` | 8,148 | 82 receipts + header | `8dfc7b0eccfcc942faa0ef7565b18c74e48a5abc5b5949ece2e4dbdd0d5d95e8` |
+| `raw/pos_shop001_2025-01-07.csv` | 9,712 | 96 receipts + header | `f2c6be18e050d0597484d75d110da4bac13d5ebb43d448da0f7d7a4b6df73acb` |
 | `raw/products_catalog.csv` | 14,880 | 96 products + header | `7d033598c73778e827d3ed85c1a5b2eac391117e5e562cde130e93c43e0acb62` |
+
+There is **one CSV per trading day** — 550 receipts in total across the six files. Keeping
+the week per day means each file can be loaded, checked and re-downloaded on its own, and a
+single load failure in Phase II touches one day, not the whole week.
 
 The committed copies use LF line endings (the source uses CRLF); that is the only change,
 and the checksums above are the checksums of the files in this repository, so they can be
@@ -40,16 +49,17 @@ so a re-download can be verified:
 
 ## 3. The subset rule (exactly reproducible)
 
-The assignment asks for a few hundred records. The committed file is the whole of outlet
+The assignment asks for a few hundred records. The committed files are the whole of outlet
 `SHOP001` for the first week of the source period:
 
 ```
 receipts where Outlet = 'SHOP001' and Date between 2025-01-02 and 2025-01-07   ->  550 rows
 ```
 
-Every row keeps all eleven original columns, unmodified and in the original order. Nothing was
-edited, re-priced or invented; the file was produced by filtering the original, and the header
-row is the original header row.
+Those 550 rows are split into six files by `Date`, one per trading day. Every row keeps all
+eleven original columns, unmodified and in the original order. Nothing was edited, re-priced
+or invented; each file was produced by filtering the original, and the header row of every
+file is the original header row.
 
 Facts about the committed subset: 433 receipts paid by `BCA`, 117 by `Cash`; 13,542,000 in
 `TotalAmount` across the week; 2025-01-02 to 2025-01-07 (the source has no 1 January rows).
@@ -86,8 +96,8 @@ Facts about the committed subset: 433 receipts paid by `BCA`, 117 by `Cash`; 13,
   a rounding rule the database has to define.
 - **Some receipts carry `Price = 0` products** (`Add on` items with a zero catalogue price) —
   handle them as zero-value lines rather than as missing prices.
-- Files are CRLF-terminated in the source and the full source file has no final newline, so
-  `wc -l` reports one line fewer than the row count.
+- Files are CRLF-terminated, and the full source file has no final newline, so `wc -l` reports
+  one line fewer than the row count.
 
 ## 6. What is real and what is derived
 
@@ -118,12 +128,20 @@ sha256sum Transactions.csv Products.csv
 Get-FileHash Transactions.csv -Algorithm SHA256
 ```
 
-Rebuild the committed subset from the full file:
+Rebuild the committed per-day files from the full file:
 
 ```bash
-{ head -1 Transactions.csv; grep -E '^SHOP001,2025-01-0[1-7]' Transactions.csv; } \
-  > pos_transactions_shop001_2025-01-01_07.csv
+head -1 Transactions.csv > header.tmp
+for d in 02 03 04 05 06 07; do
+  { cat header.tmp; grep -E "^SHOP001,2025-01-$d," Transactions.csv; } \
+    > "pos_shop001_2025-01-$d.csv"
+done
+rm header.tmp
 ```
+
+Check the rebuild against the table in §2 with `sha256sum pos_shop001_2025-01-0*.csv` — the
+sums must match, because the split is deterministic. (2025-01-01 has no rows: the source
+begins on 2 January.)
 
 The download links above are the direct file URLs of the Mendeley deposit. If a link ever
 changes, the DOI (`10.17632/kcgf45y24m.2`) resolves to the current version.
