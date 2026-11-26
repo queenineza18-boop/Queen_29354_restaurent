@@ -2,12 +2,14 @@ name: Render ERD
 
 # docs/design/erd.png is drawn by tools/make_erd.py, so the picture can always
 # be rebuilt from the script. This workflow rebuilds it automatically whenever
-# the script changes, and can also be started by hand from the Actions tab.
+# the script (or this file) changes, and can also be started by hand from the
+# Actions tab.
 on:
   workflow_dispatch:
   push:
     paths:
       - tools/make_erd.py
+      - .github/workflows/erd.yml
 
 permissions:
   contents: write
