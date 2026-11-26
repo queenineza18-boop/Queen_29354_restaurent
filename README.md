@@ -4,6 +4,7 @@
 **Course:** INSY 8311 – Database Development with PL/SQL · **Instructor:** Eric Maniraguha
 **Institution:** Adventist University of Central Africa (AUCA) · **Academic year:** 2026–2027, Semester I
 **Phase 0 deliverable:** research log, data source, proposal, presentation
+**Phase II deliverable:** dataset card and quality report, normalisation walk-through, logical ERD and data dictionary
 
 ROSTS is a relational Oracle database with all business logic written in PL/SQL: it takes a
 customer order, prices every line from the menu, computes the bill and its tax, records the
@@ -96,7 +97,11 @@ The real receipts give the system its hard facts: receipt numbers (`SHOP001JAN25
 timestamps, item names such as `Basic Latte (Ice Arabica)`, quantities, 11 % tax, totals and
 payment method. Everything the database asserts about money is checked against them.
 
-## 4. Planned tables (3NF, 15 tables)
+## 4. Tables (3NF, 15 tables)
+
+The design is complete in Phase II: `docs/design/normalization.md` derives these tables from the
+raw receipts step by step, `docs/design/erd.png` draws them in crow's-foot notation and
+`docs/design/data_dictionary.md` defines every column, key and relationship.
 
 | # | Table | Purpose |
 | --- | --- | --- |
@@ -168,6 +173,7 @@ Queen_29354_restaurent/
 ├── README.md
 ├── data/
 │   ├── README.md                      provenance, licence, subset rule, checksums
+│   ├── dataset_card.md                Phase II: what the data is, quality counts, issues found
 │   └── raw/
 │       ├── pos_shop001_2025-01-02.csv … -01-07.csv       550 real receipts, one CSV per day
 │       └── products_catalog.csv                          96 real products
@@ -177,10 +183,16 @@ Queen_29354_restaurent/
 │   ├── proposal/proposal.docx         same text, formatted as submitted
 │   ├── presentation/phase0_slides.md  12 slides
 │   ├── innovation/innovation.md       APEX plan
-│   └── business_process/              Phase I deliverables
-│       ├── business_process_diagram.pdf
-│       └── business_process_explanation.pdf
-└── tools/make_proposal_docx.ps1       rebuilds proposal.docx from proposal.md
+│   ├── business_process/              Phase I deliverables
+│   │   ├── business_process_diagram.pdf
+│   │   └── business_process_explanation.pdf
+│   └── design/                        Phase II deliverables
+│       ├── normalization.md           UNF → 1NF → 2NF → 3NF on real rows, field mapping
+│       ├── erd.png                    logical ERD, 15 entities, crow's-foot notation
+│       └── data_dictionary.md         every column, key, relationship, business rule
+└── tools/
+    ├── make_proposal_docx.ps1         rebuilds proposal.docx from proposal.md
+    └── make_erd.py                    redraws docs/design/erd.png
 ```
 
 ## 8. Phase 0 checklist
@@ -217,6 +229,57 @@ Phase I is closed to generative AI: the diagram is drawn shape by shape in the c
 tool and the explanation is written by hand, so this repository carries only the
 published link and the two exported PDFs. Export steps and the exam checklist are in
 `docs/business_process/README.md`.
+
+## 10. Phase II – Data sourcing, normalisation and logical design
+
+The raw data is a flat POS export: one row per receipt, with the products written into a single
+quoted cell. Phase II turns that into the fifteen relational tables above and shows its working,
+so Phase IV only has to create and load what has already been proved on real rows.
+
+| Deliverable | File | What is in it |
+| --- | --- | --- |
+| Dataset card and quality report | [`data/dataset_card.md`](data/dataset_card.md) | Source, licence, format, what one record is, and 28 quality checks with counts |
+| Normalisation walk-through | [`docs/design/normalization.md`](docs/design/normalization.md) | UNF → 1NF → 2NF → 3NF on five real receipts, the dependency removed at each split, field-by-field mapping, cleaning checklist |
+| Logical ERD | [`docs/design/erd.png`](docs/design/erd.png) | All 15 entities in crow's-foot notation, PK/FK marked |
+| Data dictionary | [`docs/design/data_dictionary.md`](docs/design/data_dictionary.md) | Every column, its meaning, required/unique, plus 16 relationships with cardinality and optionality and the business rules |
+
+The data it works on is the 550 receipts already committed in `data/raw/`, and the design is
+checked against them rather than assumed:
+
+- **550 receipts contain 638 item occurrences.** 462 receipts carry one product and 88 carry
+two, so 1NF produces 638 rows, not 550. The 94 distinct item names all resolve to the catalogue
+once the receipt's `ProductName (Variant)` form is applied.
+- **The extract is structurally dirty, not numerically dirty.** No duplicate receipts, no blank
+cells, no malformed amounts, receipt numbers sequential 1–550, tax exactly 11 % of net in every
+row. What it does have: a repeating group in `Items`, one outlet code repeated 550 times, money
+stored as text, `TotalItem` duplicating a count, and **16 zero-value loyalty receipts**.
+- **The zero-value receipts are the interesting case.** Sixteen receipts carry a real product and
+a `Cash` payment of 0 with the loyalty flag set. They are loaded, not deleted, and
+`normalization.md` §8 item 10 records the one decision Phase IV has to make about them: they are
+a 100 % loyalty redemption, and the 20 % manager rule (`-20005`) would otherwise refuse them.
+- **Line prices are not in the file.** The receipt gives one total per sale, so `ORDER_LINE.unit_price`
+must come from `MENU_ITEM` at sale time. 534 of the 550 receipts reconcile to the rupiah against
+the catalogue; the 16 that do not are the zero-value rows.
+
+What Phase IV should load, and what to check afterwards:
+
+| Table | Rows | Table | Rows |
+| --- | ---: | --- | ---: |
+| `OUTLET` | 1 | `ORDERS` | 550 |
+| `MENU_CATEGORY` | 6 | `ORDER_LINE` | 638 |
+| `MENU_ITEM` | 96 | `PAYMENT` | 550 |
+| `PAYMENT_METHOD` | 2 | `PRICE_HISTORY` | 96 seed rows |
+
+Control totals: `SUM(ORDERS.total_amount)` = 13,542,000, `SUM(PAYMENT.amount)` = 13,542,000,
+`SUM(ORDER_LINE.line_total)` = 13,542,000, receipts by method BCA 433 / Cash 117. The remaining
+nine tables (`STAFF`, `INGREDIENT`, `MENU_ITEM_INGREDIENT`, `PROMOTION`, `STOCK_MOVEMENT`,
+`ORDER_PROMOTION`, `AUDIT_LOG`, and `OUTLET`'s descriptive columns) cannot be loaded from the
+source at all; they are derived sample data or written by the PL/SQL, and they are labelled that
+way in `data/README.md` §6 and `normalization.md` §10.
+
+The ERD is generated, not hand-placed: `python tools/make_erd.py --check` redraws
+`docs/design/erd.png` and fails if a connector crosses an entity box, so the diagram can be kept
+in step with the design.
 
 ## References
 

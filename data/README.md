@@ -83,6 +83,12 @@ Facts about the committed subset: 433 receipts paid by `BCA`, 117 by `Cash`; 13,
 `products_catalog.csv` columns: `ProductId, ProductName, Variant, Category, Price, Description`
 (96 products in six categories: Coffee 34, Menu Gedhe 19, Other 15, Tea 13, Snacks 9, Add on 6).
 
+The Phase II quality report — every check that was run over these files, with counts rather than
+impressions — is in [`dataset_card.md`](dataset_card.md) §6, and the issues it found are listed
+in §7. The short version: the extract has no duplicates, no blanks and no broken numbers, and its
+real problems are structural (a repeating group, a repeated outlet, money stored as text, 16
+zero-value loyalty receipts).
+
 ## 5. Quirks to expect in Phase II
 
 - **One row is one receipt, not one line item.** 45,667 receipts in the full file carry one
@@ -92,8 +98,11 @@ Facts about the committed subset: 433 receipts paid by `BCA`, 117 by `Cash`; 13,
   `BLACK (Houseblend)` versus the catalogue's product/variant columns), so matching needs a
   documented rule and an unresolved-name exception list.
 - **Two amounts are rounded differently.** `NetSales` + `Tax` is a decimal sum; `TotalAmount`
-  is the rounded amount actually paid. The difference must not be "fixed" in the source; it is
-  a rounding rule the database has to define.
+  is the rounded amount actually paid. In this six-day extract the three amounts agree exactly in
+  all 550 rows (`NetSales + Tax − TotalAmount = 0`), so no rounding rule has to be invented yet.
+  The per-receipt net is still rounded to three decimals, which is why the week's net totals
+  12,200,000.078 rather than 12,200,000.000 — see `dataset_card.md` §6 and
+  `docs/design/normalization.md` §6.
 - **Some receipts carry `Price = 0` products** (`Add on` items with a zero catalogue price) —
   handle them as zero-value lines rather than as missing prices.
 - Files are CRLF-terminated, and the full source file has no final newline, so `wc -l` reports
