@@ -1,0 +1,44 @@
+name: Render ERD
+
+# docs/design/erd.png is drawn by tools/make_erd.py, so the picture can always
+# be rebuilt from the script. This workflow rebuilds it automatically whenever
+# the script changes, and can also be started by hand from the Actions tab.
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - tools/make_erd.py
+
+permissions:
+  contents: write
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install the drawing libraries
+        run: pip install matplotlib pillow
+
+      - name: Draw the diagram
+        run: python tools/make_erd.py
+
+      - name: Check that no connector crosses a box
+        run: python tools/make_erd.py --check
+
+      - name: Commit the picture if it changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/design/erd.png
+          if git diff --cached --quiet; then
+            echo "docs/design/erd.png is already up to date"
+          else
+            git commit -m "Regenerate the logical ERD from tools/make_erd.py"
+            git push
+          fi
