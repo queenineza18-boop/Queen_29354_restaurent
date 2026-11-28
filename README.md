@@ -5,9 +5,13 @@ Student ID:29354
 Course: INSY 8311 – Database Development with PL/SQL 
 Instructor: Eric Maniraguha
 
-Phase 0 deliverable:research log, data source, proposal, presentation
-Phase II deliverable:dataset card and quality report
+Phase 0 deliverable: research log, source selection, proposal, presentation
+Phase II deliverable: dataset card and quality report, sourcing write-up,
 normalisation walk-through, logical ERD and data dictionary
+
+Phase 0 only finds and downloads the source. Everything that describes, checks and cleans
+those files -- the sourcing narrative, the quality counts and every defect found -- is
+Phase II, so the two phases stay in their own sections.
 
 Restaurant Order and Sales Tracking System  is a relational Oracle database with all business logic written in PL/SQL: it takes a
 customer order, prices every line from the menu, computes the bill and its tax, records the
@@ -180,9 +184,9 @@ cannot be edited into an inconsistency. Details in docs/innovation/innovation.md
 Queen_29354_restaurent/
 ├── README.md
 ├── data/
-│   ├── README.md                      provenance, licence, subset rule, checksums
+│   ├── README.md                      Phase II: provenance, licence, subset rule, checksums
 │   ├── dataset_card.md                Phase II: what the data is, quality counts, issues found
-│   └── raw/
+│   └── raw/                           Phase 0: the files as downloaded, never edited since
 │       ├── pos_shop001_2025-01-02.csv … -01-07.csv       550 real receipts, one CSV per day
 │       └── products_catalog.csv                          96 real products
 ├── docs/
@@ -208,13 +212,18 @@ Queen_29354_restaurent/
  [x] Research log with six verified sources: 2 papers, 1 official statistic, 1 existing
       system, 1 dataset, 1 technical reference — every link opened and read
  [x] Real dataset, openly licensed (CC BY 4.0), no personal data, a few hundred records
-      committed to data/raw/
+      chosen and downloaded to data/raw/ as they came from the source
  [x] Two-page proposal with title, problem, solution, data source, planned tables, planned
       PL/SQL features, innovation and APA references
 [x] Twelve-slide Phase 0 deck
  [x] Innovation option and tool named (user interface — Oracle APEX)[ ] Phase I business process model (BPMN / UML swimlane) — see §9
  GitHub repository renamed to the firstname_studentID_projectShortName pattern if the
       instructor requires it; the current name is Queen_29354_restaurent
+
+Phase 0 ends at that download. It names the source and proves the data is usable; it does not
+describe the files, count their defects or clean them. That work is Phase II and is written up
+in §10 and in `data/dataset_card.md`, so the Phase 0 files (`docs/research/`, `docs/proposal/`,
+`docs/presentation/`) are left exactly as they were submitted.
 
 ## 9. Phase I – Business Process Modeling
 
@@ -241,6 +250,13 @@ published link and the two exported PDFs. Export steps and the exam checklist ar
 The raw data is a flat POS export: one row per receipt, with the products written into a single
 quoted cell. Phase II turns that into the fifteen relational tables above and shows its working,
 so Phase IV only has to create and load what has already been proved on real rows.
+
+Data sourcing is documented here, not in Phase 0. Sections 1–4 of `data/dataset_card.md` record
+where each of the seven files came from, its licence, its format, its size and what one record
+means; sections 5–10 then check the files row by row and report the counts. `data/README.md`
+carries the provenance, the subset rule and the checksums. The raw files in `data/raw/` are
+untouched copies of the download — no cleaning was done in place, and every defect is written
+down for Phase IV to fix on load.
 
 | Deliverable | File | What is in it |
 | --- | --- | --- |
